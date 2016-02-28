@@ -15,21 +15,22 @@ class GroupsController < ApplicationController
 	end
 
 	def edit
-		@group = Group.find(params[:id])
+		@group = current_user.groups.find(params[:id])
 	end
 
 	def create
-		@group = Group.create(group_params)
+		@group = current_user.groups.new(group_params)
 
 		if @group.save
-			redirect_to groups_path
+			current_user.join!(@group)
+			redirect_to groups_path, notice: "新增討論版成功"
 		else
 			render :new
 		end
 	end
 
 	def update
-		@group = Group.find(params[:id])
+		@group = current_user.groups.find(params[:id])
 
 		if @group.update(group_params)
 			redirect_to groups_path, notice: "修改討論版成功"
@@ -39,7 +40,7 @@ class GroupsController < ApplicationController
 	end
 
 	def destroy
-		@group = Group.find(params[:id])
+		@group = current_user.groups.find(params[:id])
 		@group.destroy
 		redirect_to groups_path, alert: "討論版已刪除"
 	end
@@ -48,7 +49,7 @@ class GroupsController < ApplicationController
 		@group = Group.find(params[:id])
 
 		if !current_user.is_member_of?(@group)
-			current_usr.join!(@group)
+			current_user.join!(@group)
 			flash[:notice] = "加入本討論版成功！"
 		else
 			flash[:warning] = "你已經是本討論版成員了！"
